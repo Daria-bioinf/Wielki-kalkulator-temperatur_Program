@@ -28,13 +28,13 @@ float KtoF(float K) {
 
 int check(float temp, char unit) {
     if ((unit == 'K' && temp < 0) || (unit == 'C' && temp < -273.15) || (unit == 'F' && temp < -459.67)) {
-        return -999.0;
+        return 0;
     }
     return 1;
 }
 
 void storeTemperaturs(float oryginalTemp, float przerobionyTemp, char oryginalUnit, char przerobionyUnit) {
-    if (datacounder + 2 <= MAX_HISTORY) {
+    if (datacounder + 1 < MAX_HISTORY) {
         temperatureData[datacounder] = oryginalTemp;
         temperatureUnits[datacounder] = oryginalUnit;
         datacounder++;
@@ -57,15 +57,25 @@ int history_count = 0;
 
 void add_to_history(const char* type, double input, double output) {
     if (history_count < 100) { // проверка, чтобы не выйти за пределы массива
-        strcpy(history[history_count].type, type);
+        // Копируем строку с усечением, если длина превышает размер поля
+        if (strlen(type) >= sizeof(history[history_count].type)) {
+            printf("Ostrzeżenie: Obcinanie ciągu znaków w celu dopasowania do bufora.\n");
+        }
+        strncpy(history[history_count].type, type, sizeof(history[history_count].type) - 1);
+        history[history_count].type[sizeof(history[history_count].type) - 1] = '\0'; // Добавляем завершающий нулевой символ
+
+        // Сохраняем входные и выходные значения
         history[history_count].input = input;
         history[history_count].output = output;
-        history_count++;
-    } else {
-        printf("Historia jest pelna!");
-    }
 
+        // Увеличиваем счетчик истории
+        history_count++;
+    }
+    else {
+        printf("Historia jest pelna!\n"); // Добавляем перевод строки для читабельности
+    }
 }
+
 
 
 void pokazHistorie() {
@@ -73,25 +83,71 @@ void pokazHistorie() {
         printf("Brak zapisanej historii przeliczeń");
         return;
     }
+    int historiaChoise;
+    printf("Wybierz filtr historii:\n");
+    printf("1 - Tylko C -> inne\n");
+    printf("2 - Tylko F -> inne\n");
+    printf("3 - Tylko K -> inne\n");
+    printf("4 - Cala historia\n");
+    printf("Twoj wybor:\n");
+
+    if (scanf_s("%d", &historiaChoise) != 1 || historiaChoise < 1 || historiaChoise > 4) {
+        printf("Nie prawidlpwt wybor. Powrot do menu glownego\n");
+        while (getchar() != '\n'); // отчистка ввода
+        return;
+    }
+    char filterUnits = '\0'; // переменная для фильтрации
+    if (filterUnits == 1)
+        filterUnits = 'C';
+    else if (filterUnits == 2)
+        filterUnits = 'F';
+    else if (filterUnits == 3)
+        filterUnits = 'K';
+    printf("\n Historia przeliczonych temperatur\n"); // ввывод отфильтрованной истории
+
+    int found = 0; // для проверки, есть ли данные
+    for (int i = 0; i < datacounder; i += 2) // i=i+2, обработать одну пару данных за итерацию 
+    {
+        char originalUnit = temperatureUnits[i];
+        char convertedUnit = temperatureUnits[i + 1];
+
+        if (filterUnits != '\0' && originalUnit != filterUnits) // проверка фильтра 
+        {
+            continue; // пропускаем неподходящие записи
+        }
+        printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1, temperatureData[i], originalUnit, temperatureData[i+1],convertedUnit);
+        found = 1; // есть данные
+
+    }
+    if (!found) {
+        printf("Brak danych dla wybranego filtra");
+    }
+
+    printf("Naczisnij ENTER, aby powrocic do menu glownego\n");
+    while (getchar() != '\n'); // отчистка ввода
+    getchar();
+
+
+
     printf("Historia przeliczonych temperatur:\n");
 
     int pageSize = 5;
-    int correntPage = 0;
+    int currentPage = 0;
     int totalPages = (datacounder / 2 + pageSize - 1) / pageSize;
 
     while (1) {
         system("cls");
-        printf("Strona %d z %d\n", correntPage + 1, totalPages);
+        printf("Strona %d z %d\n", currentPage + 1, totalPages);
 
-        for (int i = correntPage * pageSize * 2; i < (correntPage + 1)* pageSize * 2 && i < datacounder; i += 2){
+        for (int i = currentPage * pageSize * 2; i < (currentPage + 1)* pageSize * 2 && i < datacounder; i += 2){
             printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1,
                 temperatureData[i], temperatureUnits[i],
                 temperatureData[i + 1], temperatureUnits[i + 1]);
         }
         printf("Wybierz opcje:\n");
-        if (correntPage > 0)
+        if (currentPage > 0)
             printf("1 - Poprzednia strona\n");
-        if (correntPage < totalPages - 1)
+        if (currentPage < totalPages - 1)
             printf("2 - Nasttpna strona\n");
         printf("0 - Powrot do menu glownego\n");
 
@@ -102,10 +158,10 @@ void pokazHistorie() {
             continue;
         } if (choice == 0) {
             break;
-            } else if (choice == 1 && correntPage > 0) {
-            correntPage--;
-        } else if (choice == 2 && correntPage < totalPages - 1) {
-            correntPage++;
+            } else if (choice == 1 && currentPage > 0) {
+            currentPage--;
+        } else if (choice == 2 && currentPage < totalPages - 1) {
+            currentPage++;
         } else {
             printf("Nie prawidłowa opcja. Spróbuj ponownie.\n");
          }
@@ -275,7 +331,7 @@ int main() {
     return 0;
 }
 
-//gfdgdf
+
 
 
 
