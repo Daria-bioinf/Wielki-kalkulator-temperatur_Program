@@ -2,10 +2,34 @@
 #include <stdlib.h>
 #include "headerFile.h.cpp"
 #include <cstring>
+#include <cstdlib>
+
+#include <iostream>
+using namespace std;
 
 float temperatureData[MAX_HISTORY];
 char temperatureUnits[MAX_HISTORY];
 int datacounder = 0;
+
+struct StoreData {
+
+    float temperatureData;
+    char temperatureUnit;
+    int datacounder = 0;
+};
+
+static void SaveStoreData() {
+
+}
+
+static StoreData GetStoreData(int index) {
+    StoreData data;
+    data.temperatureData = temperatureData[index];
+    data.temperatureUnit = temperatureUnits[index];
+    data.datacounder = index;
+
+    return data;
+}
 
 float FtoC(float F) {
     return (F - 32.0) * 5.0 / 9.0;
@@ -55,13 +79,13 @@ struct Conversition {
 struct Conversition history[100];
 int history_count = 0;
 
-void add_to_history(const char* type, double input, double output) {
+static void add_to_history(const char* type, double input, double output) {
     if (history_count < 100) { // проверка, чтобы не выйти за пределы массива
         // Копируем строку с усечением, если длина превышает размер поля
         if (strlen(type) >= sizeof(history[history_count].type)) {
             printf("Ostrzeżenie: Obcinanie ciągu znaków w celu dopasowania do bufora.\n");
         }
-        strncpy(history[history_count].type, type, sizeof(history[history_count].type) - 1);
+        strncpy_s(history[history_count].type, type, sizeof(history[history_count].type) - 1);
         history[history_count].type[sizeof(history[history_count].type) - 1] = '\0'; // Добавляем завершающий нулевой символ
 
         // Сохраняем входные и выходные значения
@@ -134,6 +158,7 @@ void pokazHistorie() {
     int pageSize = 5;
     int currentPage = 0;
     int totalPages = (datacounder / 2 + pageSize - 1) / pageSize;
+    StoreData storeData;
 
     while (1) {
         system("cls");
@@ -143,6 +168,11 @@ void pokazHistorie() {
             printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1,
                 temperatureData[i], temperatureUnits[i],
                 temperatureData[i + 1], temperatureUnits[i + 1]);
+
+            storeData = GetStoreData(i);
+
+            printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1,
+                storeData.temperatureData, storeData.temperatureUnit);
         }
         printf("Wybierz opcje:\n");
         if (currentPage > 0)
@@ -181,7 +211,7 @@ void showMenu() {
     printf("-1 - zalonc dzialania programu\n");
 }
 
-void showMessageNotSuchTemperature() {
+static void showMessageNotSuchTemperature() {
     printf("Nie ma takiej temperatury.\n");
 }
 
@@ -189,6 +219,10 @@ int main() {
     int choice;
     float temp;
     int valid;
+
+    //int start = 10;
+    //int end = 20;
+    //int x = rand() % (end - start + 1) + start;
 
     while (1) {
         system("cls");
