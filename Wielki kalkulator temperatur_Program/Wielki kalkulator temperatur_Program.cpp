@@ -10,26 +10,115 @@ using namespace std;
 float temperatureData[MAX_HISTORY];
 char temperatureUnits[MAX_HISTORY];
 int datacounder = 0;
+char Inits[] = { 'C', 'F', 'K' };
 
 struct StoreData {
 
-    float temperatureData;
-    char temperatureUnit;
-    int datacounder = 0;
+    float TemperatureInput;
+    float TemperatureOutput;
+    char UnitInput = '\0';
+    char UnitOutput = '\0';
+    int Index = 0;
+
+    void Clear()
+    {
+        TemperatureInput = 0;
+        TemperatureOutput = 0;
+        UnitInput = '\0';
+        UnitOutput = '\0';
+        Index = 0;
+    }
+
+    void Update(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput)
+    {
+        TemperatureInput = temperatureInput;
+        TemperatureOutput = temperatureOutput;
+        UnitInput = unitInput;
+        UnitOutput = unitOutput;
+    }
 };
 
-static void SaveStoreData() {
+StoreData History[MAX_HISTORY];
+
+
+
+static void AddData(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
+
+    StoreData storeData;
+    storeData.TemperatureInput = temperatureInput;
+    storeData.TemperatureOutput = temperatureOutput;
+    storeData.UnitInput = unitInput;
+    storeData.UnitOutput = unitInput;
+
+    History[datacounder] = storeData;
+    datacounder++;
+}
+
+static void UpdateData(int index, float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
+
+    if (index < 0 || index >= datacounder) {
+        printf("Invalid index!\n");
+        return;
+    }
+
+    StoreData storeData = History[index];
+
+    storeData.Update(temperatureInput, temperatureOutput, unitInput, unitOutput);
+}
+
+static StoreData GetDataByCounter(int counter) {
+    return History[counter];
+}
+
+static void RemoveDataByCounter(int index) {
+
+    if (index < 0 || index >= datacounder) {
+        printf("Invalid index!\n");
+        return;
+    }
+
+    StoreData storeData = History[index];
+    storeData.Clear();
+
+    for (int i = index; i < datacounder; i++)
+    {
+        History[i] = History[i + 1];
+
+        if (History[i].Index == 0)
+            break;
+    }
+
+    datacounder--;
+}
+
+static void AddRandomData() {
+
 
 }
 
-static StoreData GetStoreData(int index) {
-    StoreData data;
-    data.temperatureData = temperatureData[index];
-    data.temperatureUnit = temperatureUnits[index];
-    data.datacounder = index;
+static void ShowMainMenu() {
 
-    return data;
+    printf("Wybierz opcję:\n");
+    printf("1 - przelicz Fahr -> Celsius\n");
+    printf("2 - przelicz Fahr -> Kelwin\n");
+    printf("3 - przelicz Celsius -> Fahr\n");
+    printf("4 - przelicz Celsius -> Kelwin\n");
+    printf("5 - przelicz Kelwin -> Celsius\n");
+    printf("6 - przelicz Kelwin -> Fahr\n");
+    printf("7 - Pokaz historie przeliczen\n");
+    printf("-1 - zalonc dzialania programu\n");
 }
+
+static void ShowHistoryMenu()
+{
+    printf("Wybierz filtr historii:\n");
+    printf("1 - Tylko C -> inne\n");
+    printf("2 - Tylko F -> inne\n");
+    printf("3 - Tylko K -> inne\n");
+    printf("4 - Cala historia\n");
+    printf("Twoj wybor:\n");
+}
+
 
 float FtoC(float F) {
     return (F - 32.0) * 5.0 / 9.0;
@@ -139,7 +228,7 @@ void pokazHistorie() {
         {
             continue; // пропускаем неподходящие записи
         }
-        printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1, temperatureData[i], originalUnit, temperatureData[i+1],convertedUnit);
+        printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1, temperatureData[i], originalUnit, temperatureData[i + 1], convertedUnit);
         found = 1; // есть данные
 
     }
@@ -164,15 +253,10 @@ void pokazHistorie() {
         system("cls");
         printf("Strona %d z %d\n", currentPage + 1, totalPages);
 
-        for (int i = currentPage * pageSize * 2; i < (currentPage + 1)* pageSize * 2 && i < datacounder; i += 2){
+        for (int i = currentPage * pageSize * 2; i < (currentPage + 1) * pageSize * 2 && i < datacounder; i += 2) {
             printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1,
                 temperatureData[i], temperatureUnits[i],
                 temperatureData[i + 1], temperatureUnits[i + 1]);
-
-            storeData = GetStoreData(i);
-
-            printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1,
-                storeData.temperatureData, storeData.temperatureUnit);
         }
         printf("Wybierz opcje:\n");
         if (currentPage > 0)
@@ -188,13 +272,16 @@ void pokazHistorie() {
             continue;
         } if (choice == 0) {
             break;
-            } else if (choice == 1 && currentPage > 0) {
+        }
+        else if (choice == 1 && currentPage > 0) {
             currentPage--;
-        } else if (choice == 2 && currentPage < totalPages - 1) {
+        }
+        else if (choice == 2 && currentPage < totalPages - 1) {
             currentPage++;
-        } else {
+        }
+        else {
             printf("Nie prawidłowa opcja. Spróbuj ponownie.\n");
-         }
+        }
     }
 
 }
@@ -229,7 +316,7 @@ int main() {
         showMenu();
         printf("Wybór: ");
 
-        if (scanf_s("%d", &choice) != 1) { 
+        if (scanf_s("%d", &choice) != 1) {
             printf("Nieprawidłowe dane wejściowe. Proszę wpisać numer.\n");
             while (getchar() != '\n');
             continue;
@@ -238,7 +325,7 @@ int main() {
         if (choice == -1) {
             printf("Zakończono działanie programu.\n");
             return 0;
-        } 
+        }
 
         switch (choice) {
         case 1:
@@ -258,7 +345,7 @@ int main() {
                 storeTemperaturs(temp, przerobiony, 'F', 'C');
             }
             break;
-             
+
         case 2:
             printf("Podaj temperaturę w Fahrenheitach: ");
             if (scanf_s("%f", &temp) != 1) {
@@ -274,7 +361,7 @@ int main() {
                 float przerobiony = FtoK(temp);
                 printf("Wynik: %.2f K\n", przerobiony);
                 storeTemperaturs(temp, przerobiony, 'F', 'K');
-            } 
+            }
             break;
 
         case 3:
@@ -364,9 +451,3 @@ int main() {
 
     return 0;
 }
-
-
-
-
-
-
