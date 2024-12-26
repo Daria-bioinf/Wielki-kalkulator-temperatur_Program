@@ -1,12 +1,12 @@
 ﻿#include <cstdio>
 
 #include "HeaderFile.h.cpp"
-#include "StoreData.cpp"
+#include <stdlib.h>
 
 using namespace std;
 
 StoreData history[MAX_HISTORY];
-int history_counter = 0;
+int dataCounter = 0;
 
 char Inits[] = { 'C', 'F', 'K' };
 
@@ -48,15 +48,15 @@ static void AddDataToHistory(float temperatureInput, float temperatureOutput, ch
     storeData.TemperatureOutput = temperatureOutput;
     storeData.UnitInput = unitInput;
     storeData.UnitOutput = unitOutput;
-    storeData.HistoryIndex = history_counter;
+    storeData.HistoryIndex = dataCounter;
 
-    history[history_counter] = storeData;
-    history_counter++;
+    history[dataCounter] = storeData;
+    dataCounter++;
 }
 
 static void UpdateDataInHistory(int historyIndex, float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
 
-    if (historyIndex < 0 || historyIndex >= history_counter) {
+    if (historyIndex < 0 || historyIndex >= dataCounter) {
         printf("Invalid index!\n");
         return;
     }
@@ -70,25 +70,28 @@ static StoreData GetDataByIndexFromHistory(const int index) {
     return history[index];
 }
 
-void remove_data_from_history(const int index) {
+StoreData remove_data_from_history(const int index) {
 
-    if (index < 0 || index >= history_counter) {
+    /*if (index < 0 || index >= dataCounter) {
         printf("Invalid index!\n");
         return;
-    }
+    }*/
 
     StoreData storeData = history[index];
-    storeData.Clear();
+    history[index].Clear();
 
-    for (int i = index; i < history_counter; i++)
+
+    for (int i = index; i < dataCounter; i++)
     {
         history[i] = history[i + 1];
+        history[i].HistoryIndex--;
 
         if (history[i].HistoryIndex == 0)
             break;
     }
 
-    history_counter--;
+    dataCounter--;
+    return storeData;
 }
 
 static void AddRandomData() {
@@ -103,7 +106,7 @@ void show_history_by_input_unit(char unitInput)
 
     bool hasUnitByFilter = false;
 
-    for (int i = 0; i < history_counter; i++)
+    for (int i = 0; i < dataCounter; i++)
     {
         if (history[i].UnitInput == unitInput)
         {
@@ -120,9 +123,8 @@ void show_history_by_input_unit(char unitInput)
 }
 
 
-void show_history_menu()
-{
-    while(true)
+void show_history_menu() {
+    while (true)
     {
         printf("Wybierz filtr historii:\n");
         printf("1 - Tylko C -> inne\n");
@@ -135,49 +137,66 @@ void show_history_menu()
         printf("Twoj wybor:\n");
 
         int choice = 0;
-
-        scanf_s("%d", &choice);
-
-        switch (choice)
-        {
-        case 1:
-            show_history_by_input_unit('C');
-            break;
-        case 2:
-            show_history_by_input_unit('F');
-            break;
-        case 3:
-            show_history_by_input_unit('K');
-            break;
-        case 4:
-            show_all_history();
-            break;
-        case 5:
-            show_delete_menu();
-            return;
-        case 6:
-            show_update_menu();
-            return;
-        case 7:
-            show_main_menu();
-            return;
-
-        default:
-            printf("Wrong choice\n");
-            break;
+        if (scanf_s("%d", &choice) != 1 || choice < 1 || choice > 7) {
+            printf("Nie prawidlowy wybor. Powrot do menu glownego\n");
         }
+        while (getchar() != '\n');
+       
+            switch (choice)
+            {
+            case 1:
+                show_history_by_input_unit('C');
+                break;
+            case 2:
+                show_history_by_input_unit('F');
+                break;
+            case 3:
+                show_history_by_input_unit('K');
+                break;
+            case 4:
+                show_all_history();
+                break;
+            case 5:
+                show_delete_menu();
+                return;
+            case 6:
+                show_update_menu();
+                return;
+            case 7:
+                show_main_menu();
+                return;
 
-        printf("\nNaciśnij Enter, aby kontynuować...");
-        getchar();
-        getchar();
+            default:
+                printf("Wrong choice\n");
+                break;
+            }
 
+            printf("\nNaciśnij Enter, aby kontynuować...");
+            getchar();
+
+      
     }
 }
 
-void show_delete_menu()
-{
-    //input history index for delete
-    printf("Not Ready!!!\n");
+void show_delete_menu() {
+    if (dataCounter == 0) {
+        printf("Historia jest pusta. Nie ma nic do usuniеcia.\n");
+        return;
+    }
+    /*system("cls");*/
+    int enityToRemove;
+    printf("Wprowadz numer linii do usuniecia.(0-%d)", dataCounter);
+    scanf_s("%d", &enityToRemove);
+
+    if (enityToRemove < 0 || enityToRemove > dataCounter) {
+        printf("Nie prawidwowy wybor.\n");
+        return;
+    }
+    StoreData removed = remove_data_from_history(enityToRemove);
+    printf("Usunienta linia: ");
+    printf("<%d> %.2f%c = %.2f%c\n", removed.HistoryIndex, removed.TemperatureInput,
+        removed.UnitInput, removed.TemperatureOutput, removed.UnitOutput);
+
     show_history_menu();
 }
 
@@ -190,7 +209,7 @@ void show_update_menu()
 
 void show_all_history()
 {
-	for(int i=0; i<history_counter; i++)
+	for(int i=0; i < dataCounter; i++)
 	{
         printf("<%d> %.2f%c = %.2f%c\n", history[i].HistoryIndex, history[i].TemperatureInput,
             history[i].UnitInput, history[i].TemperatureOutput, history[i].UnitOutput);
@@ -218,7 +237,10 @@ void show_main_menu()
 
 		printf("Wybór: ");
 
-		scanf_s("%d", &choice);
+        if (scanf_s("%d", &choice) != 1 || choice < 1 || choice > 8) {
+            printf("Nie prawidlowy wybor. Powrot do menu glownego\n");
+        }
+        while (getchar() != '\n');
 
 		switch (choice)
 		{
@@ -285,7 +307,7 @@ void show_main_menu()
 				break;
 			}
 		case 7:
-			if (history_counter == 0) {
+			if (dataCounter == 0) {
 				printf("Brak zapisanej historii przeliczeń");
 				break;
 			}
