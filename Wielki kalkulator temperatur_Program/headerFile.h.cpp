@@ -4,7 +4,7 @@
 
 extern float temperatureData[MAX_HISTORY];
 extern char temperatureUnits[MAX_HISTORY];
-extern int datacounder;
+extern int HistoryCounter;
 
 void showMenu();
 float FtoC(float F);

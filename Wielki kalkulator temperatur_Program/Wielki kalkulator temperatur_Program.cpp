@@ -1,78 +1,52 @@
-﻿#include <stdio.h>
-#include <stdlib.h>
-#include "headerFile.h.cpp"
-#include <cstring>
+﻿#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
-#include <iostream>
+#include "HeaderFile.h.cpp"
+#include "StoreData.cpp"
+
 using namespace std;
 
 float temperatureData[MAX_HISTORY];
 char temperatureUnits[MAX_HISTORY];
-int datacounder = 0;
-char Inits[] = { 'C', 'F', 'K' };
-
-struct StoreData {
-
-    float TemperatureInput;
-    float TemperatureOutput;
-    char UnitInput = '\0';
-    char UnitOutput = '\0';
-    int Index = 0;
-
-    void Clear()
-    {
-        TemperatureInput = 0;
-        TemperatureOutput = 0;
-        UnitInput = '\0';
-        UnitOutput = '\0';
-        Index = 0;
-    }
-
-    void Update(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput)
-    {
-        TemperatureInput = temperatureInput;
-        TemperatureOutput = temperatureOutput;
-        UnitInput = unitInput;
-        UnitOutput = unitOutput;
-    }
-};
-
 StoreData History[MAX_HISTORY];
 
+int HistoryCounter = 0;
+char Inits[] = { 'C', 'F', 'K' };
 
 
-static void AddData(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
+static void AddDataToHistory(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
 
     StoreData storeData;
     storeData.TemperatureInput = temperatureInput;
     storeData.TemperatureOutput = temperatureOutput;
     storeData.UnitInput = unitInput;
-    storeData.UnitOutput = unitInput;
+    storeData.UnitOutput = unitOutput;
+    storeData.HistoryIndex = HistoryCounter;
 
-    History[datacounder] = storeData;
-    datacounder++;
+    History[HistoryCounter] = storeData;
+    HistoryCounter++;
 }
 
-static void UpdateData(int index, float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
+static void UpdateDataInHistory(int historyIndex, float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
 
-    if (index < 0 || index >= datacounder) {
+    if (historyIndex < 0 || historyIndex >= HistoryCounter) {
         printf("Invalid index!\n");
         return;
     }
 
-    StoreData storeData = History[index];
+    StoreData storeData = History[historyIndex];
 
     storeData.Update(temperatureInput, temperatureOutput, unitInput, unitOutput);
 }
 
-static StoreData GetDataByCounter(int counter) {
-    return History[counter];
+static StoreData GetDataByIndexFromHistory(int index) {
+    return History[index];
 }
 
-static void RemoveDataByCounter(int index) {
+static void RemoveDataByFromHistory(int index) {
 
-    if (index < 0 || index >= datacounder) {
+    if (index < 0 || index >= HistoryCounter) {
         printf("Invalid index!\n");
         return;
     }
@@ -80,20 +54,22 @@ static void RemoveDataByCounter(int index) {
     StoreData storeData = History[index];
     storeData.Clear();
 
-    for (int i = index; i < datacounder; i++)
+    for (int i = index; i < HistoryCounter; i++)
     {
         History[i] = History[i + 1];
 
-        if (History[i].Index == 0)
+        if (History[i].HistoryIndex == 0)
             break;
     }
 
-    datacounder--;
+    HistoryCounter--;
 }
 
 static void AddRandomData() {
 
-
+    //int start = 10;
+    //int end = 20;
+    //int x = rand() % (end - start + 1) + start;
 }
 
 static void ShowMainMenu() {
@@ -117,6 +93,14 @@ static void ShowHistoryMenu()
     printf("3 - Tylko K -> inne\n");
     printf("4 - Cala historia\n");
     printf("Twoj wybor:\n");
+}
+
+static void ShowAllHistory()
+{
+	for(int i=0; i<HistoryCounter; i++)
+	{
+        printf("<%d> %.2f%c = %.2f%c\n", History[i].HistoryIndex +1, History[i].TemperatureInput, History[i].UnitInput, History[i].TemperatureOutput, History[i].UnitOutput);
+	}
 }
 
 
@@ -147,13 +131,13 @@ int check(float temp, char unit) {
 }
 
 void storeTemperaturs(float oryginalTemp, float przerobionyTemp, char oryginalUnit, char przerobionyUnit) {
-    if (datacounder + 1 < MAX_HISTORY) {
-        temperatureData[datacounder] = oryginalTemp;
-        temperatureUnits[datacounder] = oryginalUnit;
-        datacounder++;
-        temperatureData[datacounder] = przerobionyTemp;
-        temperatureUnits[datacounder] = przerobionyUnit;
-        datacounder++;
+    if (HistoryCounter + 1 < MAX_HISTORY) {
+        temperatureData[HistoryCounter] = oryginalTemp;
+        temperatureUnits[HistoryCounter] = oryginalUnit;
+        HistoryCounter++;
+        temperatureData[HistoryCounter] = przerobionyTemp;
+        temperatureUnits[HistoryCounter] = przerobionyUnit;
+        HistoryCounter++;
     }
     else {
         printf("Przekroczono limit historii!\n");
@@ -192,7 +176,7 @@ static void add_to_history(const char* type, double input, double output) {
 
 
 void pokazHistorie() {
-    if (datacounder == 0) {
+    if (HistoryCounter == 0) {
         printf("Brak zapisanej historii przeliczeń");
         return;
     }
@@ -219,7 +203,7 @@ void pokazHistorie() {
     printf("\n Historia przeliczonych temperatur\n"); // ввывод отфильтрованной истории
 
     int found = 0; // для проверки, есть ли данные
-    for (int i = 0; i < datacounder; i += 2) // i=i+2, обработать одну пару данных за итерацию 
+    for (int i = 0; i < HistoryCounter; i += 2) // i=i+2, обработать одну пару данных за итерацию 
     {
         char originalUnit = temperatureUnits[i];
         char convertedUnit = temperatureUnits[i + 1];
@@ -246,14 +230,14 @@ void pokazHistorie() {
 
     int pageSize = 5;
     int currentPage = 0;
-    int totalPages = (datacounder / 2 + pageSize - 1) / pageSize;
+    int totalPages = (HistoryCounter / 2 + pageSize - 1) / pageSize;
     StoreData storeData;
 
     while (1) {
         system("cls");
         printf("Strona %d z %d\n", currentPage + 1, totalPages);
 
-        for (int i = currentPage * pageSize * 2; i < (currentPage + 1) * pageSize * 2 && i < datacounder; i += 2) {
+        for (int i = currentPage * pageSize * 2; i < (currentPage + 1) * pageSize * 2 && i < HistoryCounter; i += 2) {
             printf("<%d> %.2f%c = %.2f%c\n", (i / 2) + 1,
                 temperatureData[i], temperatureUnits[i],
                 temperatureData[i + 1], temperatureUnits[i + 1]);
@@ -286,17 +270,17 @@ void pokazHistorie() {
 
 }
 
-void showMenu() {
-    printf("Wybierz opcję:\n");
-    printf("1 - przelicz Fahr -> Celsius\n");
-    printf("2 - przelicz Fahr -> Kelwin\n");
-    printf("3 - przelicz Celsius -> Fahr\n");
-    printf("4 - przelicz Celsius -> Kelwin\n");
-    printf("5 - przelicz Kelwin -> Celsius\n");
-    printf("6 - przelicz Kelwin -> Fahr\n");
-    printf("7 - Pokaz historie przeliczen\n");
-    printf("-1 - zalonc dzialania programu\n");
-}
+//void showMenu() {
+//    printf("Wybierz opcję:\n");
+//    printf("1 - przelicz Fahr -> Celsius\n");
+//    printf("2 - przelicz Fahr -> Kelwin\n");
+//    printf("3 - przelicz Celsius -> Fahr\n");
+//    printf("4 - przelicz Celsius -> Kelwin\n");
+//    printf("5 - przelicz Kelwin -> Celsius\n");
+//    printf("6 - przelicz Kelwin -> Fahr\n");
+//    printf("7 - Pokaz historie przeliczen\n");
+//    printf("-1 - zalonc dzialania programu\n");
+//}
 
 static void showMessageNotSuchTemperature() {
     printf("Nie ma takiej temperatury.\n");
@@ -304,19 +288,104 @@ static void showMessageNotSuchTemperature() {
 
 int main() {
     int choice;
-    float temp;
+    float temperatureInput = 0;
     int valid;
-
-    //int start = 10;
-    //int end = 20;
-    //int x = rand() % (end - start + 1) + start;
 
     while (1) {
         system("cls");
-        showMenu();
+
+        ShowMainMenu();
+
         printf("Wybór: ");
 
-        if (scanf_s("%d", &choice) != 1) {
+        scanf_s("%d", &choice);
+
+        switch (choice)
+        {
+	        case 1:
+		        {
+			        printf("Podaj temperaturę w Fahrenheitach: ");
+	        		scanf_s("%f", &temperatureInput);
+
+	        		float temperatureOutput = FtoC(temperatureInput);
+	        		printf("Wynik: %.2f C\n", temperatureOutput);
+	        		AddDataToHistory(temperatureInput, temperatureOutput, 'F', 'C');
+	        		break;
+		        }
+
+			case 2:
+		        {
+			        printf("Podaj temperaturę w Fahrenheitach: ");
+	        		scanf_s("%f", &temperatureInput);
+
+	        		float temperatureOutput = FtoK(temperatureInput);
+	        		printf("Wynik: %.2f K\n", temperatureOutput);
+                    AddDataToHistory(temperatureInput, temperatureOutput, 'F', 'K');
+                    break;
+		        }
+            case 3:
+                {
+					printf("Podaj temperaturę w Celsiuszach: ");
+                    scanf_s("%f", &temperatureInput);
+
+                    float temperatureOutput = CtoF(temperatureInput);
+                    printf("Wynik: %.2f F\n", temperatureOutput);
+                    AddDataToHistory(temperatureInput, temperatureOutput, 'C', 'F');
+                    break;
+                }
+            case 4:
+		        {
+	                printf("Podaj temperaturę w Celsiuszach: ");
+                    scanf_s("%f", &temperatureInput);
+
+	                float temperatureOutput = CtoK(temperatureInput);
+	                printf("Wynik: %.2f K\n", temperatureOutput);
+	                AddDataToHistory(temperatureInput, temperatureOutput, 'C', 'K');
+                    break;
+		        }
+            case 5:
+		        {
+	                printf("Podaj temperaturę w Kelvinach: ");
+                    scanf_s("%f", &temperatureInput);
+
+	                float temperatureOutput = KtoC(temperatureInput);
+	                printf("Wynik: %.2f C\n", temperatureOutput);
+                    AddDataToHistory(temperatureInput, temperatureOutput, 'K', 'C');
+                    break;
+
+		        }
+            case 6:
+		        {
+	                printf("Podaj temperaturę w Kelvinach: ");
+                    scanf_s("%f", &temperatureInput);
+
+	                float temperatureOutput = KtoF(temperatureInput);
+	                printf("Wynik: %.2f F\n", temperatureOutput);
+                    AddDataToHistory(temperatureInput, temperatureOutput, 'K', 'F');
+                    break;
+		        }
+            case 7:
+                if (HistoryCounter == 0) {
+                    printf("Brak zapisanej historii przeliczeń");
+                    break;
+                }
+                ShowAllHistory();
+                //ShowHistoryMenu();
+                /*pokazHistorie();*/
+                break;
+
+            default:
+                printf("Nieprawidłowy wybór.\n");
+                break;
+        }
+
+        // Pause and wait for user input before continuing
+        printf("\nNaciśnij Enter, aby kontynuować...");
+        getchar(); // Wait for a key press
+        getchar(); // Ensure the Enter key press is consumed
+
+
+       /* if (scanf_s("%d", &choice) != 1) {
             printf("Nieprawidłowe dane wejściowe. Proszę wpisać numer.\n");
             while (getchar() != '\n');
             continue;
@@ -325,114 +394,114 @@ int main() {
         if (choice == -1) {
             printf("Zakończono działanie programu.\n");
             return 0;
-        }
+        }*/
 
-        switch (choice) {
+        /*switch (choice) {
         case 1:
             printf("Podaj temperaturę w Fahrenheitach: ");
-            if (scanf_s("%f", &temp) != 1) {
+            if (scanf_s("%f", &temperatureInput) != 1) {
                 printf("Nieprawidłowe dane wejściowe. Proszę wprowadzić prawidłową temperaturę.\n");
                 while (getchar() != '\n');
                 break;
             }
-            valid = check(temp, 'F');
+            valid = check(temperatureInput, 'F');
             if (valid == -999.0) {
                 showMessageNotSuchTemperature();
             }
             else {
-                float przerobiony = FtoC(temp);
+                float przerobiony = FtoC(temperatureInput);
                 printf("Wynik: %.2f C\n", przerobiony);
-                storeTemperaturs(temp, przerobiony, 'F', 'C');
+                storeTemperaturs(temperatureInput, przerobiony, 'F', 'C');
             }
             break;
 
         case 2:
             printf("Podaj temperaturę w Fahrenheitach: ");
-            if (scanf_s("%f", &temp) != 1) {
+            if (scanf_s("%f", &temperatureInput) != 1) {
                 printf("Nieprawidlowe dane wejściowe. Proszę wprowadzić prawidlowa temperature.\n");
                 while (getchar() != '\n');
                 break;
             }
-            valid = check(temp, 'F');
+            valid = check(temperatureInput, 'F');
             if (valid == -999.0) {
                 showMessageNotSuchTemperature();
             }
             else {
-                float przerobiony = FtoK(temp);
+                float przerobiony = FtoK(temperatureInput);
                 printf("Wynik: %.2f K\n", przerobiony);
-                storeTemperaturs(temp, przerobiony, 'F', 'K');
+                storeTemperaturs(temperatureInput, przerobiony, 'F', 'K');
             }
             break;
 
         case 3:
             printf("Podaj temperaturę w Celsiuszach: ");
-            if (scanf_s("%f", &temp) != 1) {
+            if (scanf_s("%f", &temperatureInput) != 1) {
                 printf("Nieprawidłowe dane wejściowe. Proszę wprowadzić prawidłową temperaturę.\n");
                 while (getchar() != '\n');
                 break;
             }
-            valid = check(temp, 'C');
+            valid = check(temperatureInput, 'C');
             if (valid == -999.0) {
                 showMessageNotSuchTemperature();
             }
             else {
-                float przerobiony = CtoF(temp);
-                printf("Wynik: %.2f F\n", CtoF(temp));
-                storeTemperaturs(temp, przerobiony, 'C', 'F');
+                float przerobiony = CtoF(temperatureInput);
+                printf("Wynik: %.2f F\n", CtoF(temperatureInput));
+                storeTemperaturs(temperatureInput, przerobiony, 'C', 'F');
             }
             break;
 
         case 4:
             printf("Podaj temperaturę w Celsiuszach: ");
-            if (scanf_s("%f", &temp) != 1) {
+            if (scanf_s("%f", &temperatureInput) != 1) {
                 printf("Nieprawidłowe dane wejściowe. Proszę wprowadzić prawidłową temperaturę.\n");
                 while (getchar() != '\n');
                 break;
             }
-            valid = check(temp, 'C');
+            valid = check(temperatureInput, 'C');
             if (valid == -999.0) {
                 showMessageNotSuchTemperature();
             }
             else {
-                float przerobiony = CtoK(temp);
-                printf("Wynik: %.2f K\n", CtoK(temp));
-                storeTemperaturs(temp, przerobiony, 'C', 'K');
+                float przerobiony = CtoK(temperatureInput);
+                printf("Wynik: %.2f K\n", CtoK(temperatureInput));
+                storeTemperaturs(temperatureInput, przerobiony, 'C', 'K');
             }
             break;
 
         case 5:
             printf("Podaj temperaturę w Kelvinach: ");
-            if (scanf_s("%f", &temp) != 1) {
+            if (scanf_s("%f", &temperatureInput) != 1) {
                 printf("Nieprawidłowe dane wejściowe. Proszę wprowadzić prawidłową temperaturę.\n");
                 while (getchar() != '\n');
                 break;
             }
-            valid = check(temp, 'K');
+            valid = check(temperatureInput, 'K');
             if (valid == -999.0) {
                 showMessageNotSuchTemperature();
             }
             else {
-                float przerobiony = KtoC(temp);
-                printf("Wynik: %.2f C\n", KtoC(temp));
-                storeTemperaturs(temp, przerobiony, 'K', 'C');
+                float przerobiony = KtoC(temperatureInput);
+                printf("Wynik: %.2f C\n", KtoC(temperatureInput));
+                storeTemperaturs(temperatureInput, przerobiony, 'K', 'C');
             }
             break;
 
         case 6:
             printf("Podaj temperaturę w Kelvinach: ");
-            if (scanf_s("%f", &temp) != 1) {
+            if (scanf_s("%f", &temperatureInput) != 1) {
                 printf("Nieprawidłowe dane wejściowe. Proszę wprowadzić prawidłową temperaturę.\n");
                 while (getchar() != '\n');
                 break;
             }
-            valid = check(temp, 'K');
+            valid = check(temperatureInput, 'K');
             if (valid == -999.0) {
                 showMessageNotSuchTemperature();
             }
             else {
-                float przerobiony = KtoF(temp);
-                printf("Wynik: %.2f F\n", KtoF(temp));
-                storeTemperaturs(temp, przerobiony, 'K', 'F');
+                float przerobiony = KtoF(temperatureInput);
+                printf("Wynik: %.2f F\n", KtoF(temperatureInput));
+                storeTemperaturs(temperatureInput, przerobiony, 'K', 'F');
             }
             break;
         case 7:
@@ -446,7 +515,7 @@ int main() {
 
         printf("Naciśnij Enter, aby kontynować...\n");
         while (getchar() != '\n');
-        getchar();
+        getchar();*/
     }
 
     return 0;

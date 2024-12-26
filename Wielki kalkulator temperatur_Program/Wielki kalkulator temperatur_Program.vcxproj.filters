@@ -18,8 +18,11 @@
     <ClCompile Include="Wielki kalkulator temperatur_Program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="headerFile.h.cpp">
+    <ClCompile Include="HeaderFile.h.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StoreData.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

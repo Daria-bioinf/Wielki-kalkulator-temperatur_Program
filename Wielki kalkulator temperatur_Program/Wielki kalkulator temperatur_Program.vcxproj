@@ -127,7 +127,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="headerFile.h.cpp" />
+    <ClCompile Include="HeaderFile.h.cpp" />
+    <ClCompile Include="StoreData.cpp" />
     <ClCompile Include="Wielki kalkulator temperatur_Program.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
