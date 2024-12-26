@@ -2,9 +2,6 @@
 #define HEADERFILE_H
 #define MAX_HISTORY 100
 
-extern float temperatureData[MAX_HISTORY];
-extern char temperatureUnits[MAX_HISTORY];
-extern int HistoryCounter;
 
 void showMenu();
 float FtoC(float F);
@@ -14,7 +11,12 @@ float CtoK(float C);
 float KtoC(float K);
 float KtoF(float K);
 int check(float temp, char unit);
-void storeTemperaturs(float oryginalTemp, float przerobionyTemp, char oryginalUnit, char przerobionyUnit);
-void pokazHistorie();
+void show_main_menu();
+void show_all_history();
+void show_history_menu();
+void show_history_by_input_unit(char unitInput);
+void remove_data_from_history(int index);
+void show_delete_menu();
+void show_update_menu();
 
 #endif
