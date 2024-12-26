@@ -29,6 +29,10 @@ float KtoF(float K) {
     return K * 9.0 / 5.0 - 459.67;
 }
 
+void show_message_not_such_temperature() {
+    printf("Nie ma takiej temperatury.\n");
+}
+
 int check(float temp, char unit) {
     if ((unit == 'K' && temp < 0) || (unit == 'C' && temp < -273.15) || (unit == 'F' && temp < -459.67)) {
         return 0;

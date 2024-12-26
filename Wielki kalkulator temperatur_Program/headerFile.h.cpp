@@ -11,6 +11,7 @@ float CtoK(float C);
 float KtoC(float K);
 float KtoF(float K);
 int check(float temp, char unit);
+void show_message_not_such_temperature();
 void show_main_menu();
 void show_all_history();
 void show_history_menu();
