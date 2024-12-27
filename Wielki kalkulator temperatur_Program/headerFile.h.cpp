@@ -20,5 +20,6 @@ void show_history_by_input_unit(char unitInput);
 StoreData remove_data_from_history(int index);
 void show_delete_menu();
 void show_update_menu();
+void add_random_data_to_history();
 
 #endif

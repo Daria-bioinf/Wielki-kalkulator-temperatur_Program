@@ -94,11 +94,70 @@ StoreData remove_data_from_history(const int index) {
     return storeData;
 }
 
-static void AddRandomData() {
+void add_random_data_to_history() {
 
-    //int start = 10;
-    //int end = 20;
-    //int x = rand() % (end - start + 1) + start;
+    while(dataCounter <= MAX_HISTORY)
+    {
+        int choiceMin = 1;
+        int choiceMax = 6;
+
+        int temperaturaMin = 0;
+        int temperaturaMax = 1000;
+
+        int randChoice = rand() % (choiceMax - choiceMin + 1) + choiceMin;
+
+
+        int randTemperatureInput = rand() % (temperaturaMax - temperaturaMin + 1) + temperaturaMin;
+
+        switch (randChoice)
+        {
+	        case 1:
+		        {
+			        float temperatureOutput = FtoC(randTemperatureInput);
+        			AddDataToHistory(randTemperatureInput, temperatureOutput, 'F', 'C');
+        			break;
+		        }
+	        case 2:
+		        {
+			        float temperatureOutput = FtoK(randTemperatureInput);
+        			AddDataToHistory(randTemperatureInput, temperatureOutput, 'F', 'K');
+        			break;
+		        }
+	        case 3:
+	            {
+		            float temperatureOutput = CtoF(randTemperatureInput);
+		            AddDataToHistory(randTemperatureInput, temperatureOutput, 'C', 'F');
+		            break;
+	            }
+	        case 4:
+		        {
+		            float temperatureOutput = CtoK(randTemperatureInput);
+		            AddDataToHistory(randTemperatureInput, temperatureOutput, 'C', 'K');
+		            break;
+		        }
+	        case 5:
+		        {
+		            float temperatureOutput = KtoC(randTemperatureInput);
+		            AddDataToHistory(randTemperatureInput, temperatureOutput, 'K', 'C');
+		            break;
+		        }
+	        case 6:
+		        {
+		            float temperatureOutput = KtoF(randTemperatureInput);
+		            AddDataToHistory(randTemperatureInput, temperatureOutput, 'K', 'F');
+		            break;
+		        }
+
+        }
+
+        if(dataCounter == MAX_HISTORY)
+        {
+            system("cls");
+            printf("Ramdom data was added to history\n");
+            show_history_menu();
+        }
+    }
+
 }
 
 void show_history_by_input_unit(char unitInput)
@@ -232,7 +291,8 @@ void show_main_menu()
 		printf("4 - przelicz Celsius -> Kelwin\n");
 		printf("5 - przelicz Kelwin -> Celsius\n");
 		printf("6 - przelicz Kelwin -> Fahr\n");
-		printf("7 - Pokaz historie przeliczen\n");
+		printf("7 - Add random data to history\n");
+        printf("8 - Pokaz historie przeliczen\n");
 		printf("-1 - zalonc dzialania programu\n");
 
 		printf("Wybór: ");
@@ -307,6 +367,16 @@ void show_main_menu()
 				break;
 			}
 		case 7:
+			{
+                if(dataCounter == MAX_HISTORY)
+                {
+                    printf("History is full");
+                    break;
+                }
+				add_random_data_to_history();
+                break;
+			}
+		case 8:
 			if (dataCounter == 0) {
 				printf("Brak zapisanej historii przeliczeń");
 				break;
