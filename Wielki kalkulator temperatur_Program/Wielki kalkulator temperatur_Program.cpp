@@ -40,8 +40,13 @@ int check(float temp, char unit) {
     return 1;
 }
 
+void add_data_to_history(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
 
-static void AddDataToHistory(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
+    if (dataCounter == MAX_HISTORY)
+    {
+        printf("Historia jest pełna. Nie dodano żadnego nowego elementu.\n");
+        return;
+    }
 
     StoreData storeData;
     storeData.TemperatureInput = temperatureInput;
@@ -100,13 +105,11 @@ void add_random_data_to_history() {
     {
         int choiceMin = 1;
         int choiceMax = 6;
-
-        int temperaturaMin = 0;
-        int temperaturaMax = 1000;
-
         int randChoice = rand() % (choiceMax - choiceMin + 1) + choiceMin;
 
 
+        int temperaturaMin = -999;
+        int temperaturaMax = 999;
         int randTemperatureInput = rand() % (temperaturaMax - temperaturaMin + 1) + temperaturaMin;
 
         switch (randChoice)
@@ -114,37 +117,37 @@ void add_random_data_to_history() {
 	        case 1:
 		        {
 			        float temperatureOutput = FtoC(randTemperatureInput);
-        			AddDataToHistory(randTemperatureInput, temperatureOutput, 'F', 'C');
+        			add_data_to_history(randTemperatureInput, temperatureOutput, 'F', 'C');
         			break;
 		        }
 	        case 2:
 		        {
 			        float temperatureOutput = FtoK(randTemperatureInput);
-        			AddDataToHistory(randTemperatureInput, temperatureOutput, 'F', 'K');
+        			add_data_to_history(randTemperatureInput, temperatureOutput, 'F', 'K');
         			break;
 		        }
 	        case 3:
 	            {
 		            float temperatureOutput = CtoF(randTemperatureInput);
-		            AddDataToHistory(randTemperatureInput, temperatureOutput, 'C', 'F');
+		            add_data_to_history(randTemperatureInput, temperatureOutput, 'C', 'F');
 		            break;
 	            }
 	        case 4:
 		        {
 		            float temperatureOutput = CtoK(randTemperatureInput);
-		            AddDataToHistory(randTemperatureInput, temperatureOutput, 'C', 'K');
+		            add_data_to_history(randTemperatureInput, temperatureOutput, 'C', 'K');
 		            break;
 		        }
 	        case 5:
 		        {
 		            float temperatureOutput = KtoC(randTemperatureInput);
-		            AddDataToHistory(randTemperatureInput, temperatureOutput, 'K', 'C');
+		            add_data_to_history(randTemperatureInput, temperatureOutput, 'K', 'C');
 		            break;
 		        }
 	        case 6:
 		        {
 		            float temperatureOutput = KtoF(randTemperatureInput);
-		            AddDataToHistory(randTemperatureInput, temperatureOutput, 'K', 'F');
+		            add_data_to_history(randTemperatureInput, temperatureOutput, 'K', 'F');
 		            break;
 		        }
 
@@ -311,7 +314,7 @@ void show_main_menu()
 
 				float temperatureOutput = FtoC(temperatureInput);
 				printf("Wynik: %.2f C\n", temperatureOutput);
-				AddDataToHistory(temperatureInput, temperatureOutput, 'F', 'C');
+				add_data_to_history(temperatureInput, temperatureOutput, 'F', 'C');
 				break;
 			}
 
@@ -322,7 +325,7 @@ void show_main_menu()
 
 				float temperatureOutput = FtoK(temperatureInput);
 				printf("Wynik: %.2f K\n", temperatureOutput);
-				AddDataToHistory(temperatureInput, temperatureOutput, 'F', 'K');
+				add_data_to_history(temperatureInput, temperatureOutput, 'F', 'K');
 				break;
 			}
 		case 3:
@@ -332,7 +335,7 @@ void show_main_menu()
 
 				float temperatureOutput = CtoF(temperatureInput);
 				printf("Wynik: %.2f F\n", temperatureOutput);
-				AddDataToHistory(temperatureInput, temperatureOutput, 'C', 'F');
+				add_data_to_history(temperatureInput, temperatureOutput, 'C', 'F');
 				break;
 			}
 		case 4:
@@ -342,7 +345,7 @@ void show_main_menu()
 
 				float temperatureOutput = CtoK(temperatureInput);
 				printf("Wynik: %.2f K\n", temperatureOutput);
-				AddDataToHistory(temperatureInput, temperatureOutput, 'C', 'K');
+				add_data_to_history(temperatureInput, temperatureOutput, 'C', 'K');
 				break;
 			}
 		case 5:
@@ -352,7 +355,7 @@ void show_main_menu()
 
 				float temperatureOutput = KtoC(temperatureInput);
 				printf("Wynik: %.2f C\n", temperatureOutput);
-				AddDataToHistory(temperatureInput, temperatureOutput, 'K', 'C');
+				add_data_to_history(temperatureInput, temperatureOutput, 'K', 'C');
 				break;
 
 			}
@@ -363,7 +366,7 @@ void show_main_menu()
 
 				float temperatureOutput = KtoF(temperatureInput);
 				printf("Wynik: %.2f F\n", temperatureOutput);
-				AddDataToHistory(temperatureInput, temperatureOutput, 'K', 'F');
+				add_data_to_history(temperatureInput, temperatureOutput, 'K', 'F');
 				break;
 			}
 		case 7:
