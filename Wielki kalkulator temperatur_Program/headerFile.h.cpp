@@ -5,15 +5,14 @@
 
 
 void showMenu();
-float FtoC(float F);
-float FtoK(float F);
-float CtoF(float C);
-float CtoK(float C);
-float KtoC(float K);
-float KtoF(float K);
+float FtoC(float f);
+float FtoK(float f);
+float CtoF(float c);
+float CtoK(float c);
+float KtoC(float k);
+float KtoF(float k);
 int check(float temp, char unit);
 void add_data_to_history(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput);
-void show_message_not_such_temperature();
 void show_main_menu();
 void show_all_history();
 void show_history_menu();
@@ -22,5 +21,6 @@ StoreData remove_data_from_history(int index);
 void show_delete_menu();
 void show_update_menu();
 void add_random_data_to_history();
+void update_data_in_history(int historyIndex, float temperatureInput, float temperatureOutput, char unitInput, char unitOutput);
 
 #endif
