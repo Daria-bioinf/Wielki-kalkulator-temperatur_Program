@@ -249,7 +249,7 @@ void show_delete_menu() {
     }
     /*system("cls");*/
     int enityToRemove;
-    printf("Wprowadz numer linii do usuniecia.(0-%d)", data_counter);
+    printf("Wprowadz numer linii do usuniecia.(0-%d): ", data_counter);
     scanf_s("%d", &enityToRemove);
 
     if (enityToRemove < 0 || enityToRemove > data_counter) {
@@ -258,13 +258,10 @@ void show_delete_menu() {
     }
     StoreData removed = remove_data_from_history(enityToRemove);
 
-    if(removed.is_empty == false)
-    {
-        printf("Usunienta linia: ");
-        printf("<%d> %.2f%c = %.2f%c\n", removed.historyIndex, removed.temperatureInput,
-            removed.unitInput, removed.temperatureOutput, removed.unitOutput);
-    }
-
+    printf("Usunienta linia: ");
+    printf("<%d> %.2f%c = %.2f%c\n", removed.historyIndex, removed.temperatureInput,
+        removed.unitInput, removed.temperatureOutput, removed.unitOutput);
+    
     show_history_menu();
 }
 
@@ -385,7 +382,6 @@ void show_main_menu()
 		printf("6 - przelicz Kelwin -> Fahr\n");
 		printf("7 - Add random data to history\n");
         printf("8 - Pokaz historie przeliczen\n");
-		printf("-1 - zalonc dzialania programu\n");
 
 		printf("Wybór: ");
 
