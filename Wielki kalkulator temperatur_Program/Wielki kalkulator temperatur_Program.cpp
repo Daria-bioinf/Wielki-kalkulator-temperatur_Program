@@ -26,26 +26,18 @@ float KtoF(float k) {
     return k * 9.0 / 5.0 - 459.67;
 }
 
-//int check(float temp, char unit) {
-//    if ((unit == 'K' && temp < 0) || (unit == 'C' && temp < -273.15) || (unit == 'F' && temp < -459.67)) {
-//        return 0;
-//    }
-//    return 1;
-//}
 
 void add_data_to_history(float temperatureInput, float temperatureOutput, char unitInput, char unitOutput) {
 
     if (data_counter == MAX_HISTORY)
     {
-        printf("Historia jest pełna. Nie dodano żadnego nowego elementu.\n");
+        printf("Historia jest pelna. Nie dodano zadnego nowego elementu.\n");
         return;
     }
 
     StoreData storeData;
-    storeData.temperatureInput = temperatureInput;
-    storeData.temperatureOutput = temperatureOutput;
-    storeData.unitInput = unitInput;
-    storeData.unitOutput = unitOutput;
+
+    storeData.Update(temperatureInput, temperatureOutput, unitInput, unitOutput);
     storeData.historyIndex = data_counter;
 
     history[data_counter] = storeData;
@@ -59,42 +51,35 @@ void update_data_in_history(int historyIndex, float temperatureInput, float temp
         return;
     }
 
-    printf("Old value: <%d> %.2f%c = %.2f%c\n", history[historyIndex].historyIndex, history[historyIndex].temperatureInput,
+    printf("Stara wartosc: <%d> %.2f%c = %.2f%c\n", history[historyIndex].historyIndex, history[historyIndex].temperatureInput,
         history[historyIndex].unitInput, history[historyIndex].temperatureOutput, history[historyIndex].unitOutput);
 
     history[historyIndex].Update(temperatureInput, temperatureOutput, unitInput, unitOutput);
 
-    printf("New value: <%d> %.2f%c = %.2f%c\n", history[historyIndex].historyIndex, history[historyIndex].temperatureInput,
+    printf("Nowa wartosc: <%d> %.2f%c = %.2f%c\n", history[historyIndex].historyIndex, history[historyIndex].temperatureInput,
         history[historyIndex].unitInput, history[historyIndex].temperatureOutput, history[historyIndex].unitOutput);
 }
 
-StoreData remove_data_from_history(const int index) {
+void remove_data_from_history(const int index) {
 
-    if (index < 0 || index >= data_counter) {
-        printf("Invalid index!\n");
-        return {};
-    }
-
-    StoreData storeData = history[index];
+    StoreData removed = history[index];
     history[index].Clear();
-
 
     for (int i = index; i < data_counter; i++)
     {
         history[i] = history[i + 1];
         history[i].historyIndex--;
-
-        if (history[i].historyIndex == 0)
-            break;
     }
 
     data_counter--;
-    return storeData;
+    printf("Usunienta linia: ");
+    printf("<%d> %.2f%c = %.2f%c\n", removed.historyIndex, removed.temperatureInput,
+        removed.unitInput, removed.temperatureOutput, removed.unitOutput);
 }
 
 void add_random_data_to_history() {
 
-    while(data_counter <= MAX_HISTORY)
+    while(data_counter < MAX_HISTORY)
     {
         int choiceMin = 1;
         int choiceMax = 6;
@@ -149,7 +134,7 @@ void add_random_data_to_history() {
         if(data_counter == MAX_HISTORY)
         {
             system("cls");
-            printf("Ramdom data was added to history\n");
+            printf("Dane losowe zostaly dodane do historii\n");
             show_history_menu();
         }
     }
@@ -175,6 +160,7 @@ void show_history_by_input_unit(char unitInput)
         if (history[i].unitInput == unitInput)
         {
             hasUnitByFilter = true;
+
 	        printf("<%d> %.2f%c = %.2f%c\n", history[i].historyIndex, history[i].temperatureInput,
 			   history[i].unitInput, history[i].temperatureOutput, history[i].unitOutput);
         }
@@ -182,7 +168,7 @@ void show_history_by_input_unit(char unitInput)
 
     if(hasUnitByFilter == false)
     {
-        printf("History doesn't have units: %c", unitInput);
+        printf("Historia nie ma jednostek: %c", unitInput);
     }
 }
 
@@ -195,14 +181,16 @@ void show_history_menu() {
         printf("2 - Tylko F -> inne\n");
         printf("3 - Tylko K -> inne\n");
         printf("4 - Cala historia\n");
-        printf("5 - Go to Delete Menu\n");
-        printf("6 - Go to Update Menu\n");
-        printf("7 - Go to Main Menu\n");
+        printf("5 - Przejdz do menu Delete\n");
+        printf("6 - Przejdz do menu Update\n");
+        printf("7 - Przejdz do menu Gwolne\n");
         printf("Twoj wybor:\n");
 
         int choice = 0;
-        if (scanf_s("%d", &choice) != 1 || choice < 1 || choice > 7) {
-            printf("Nie prawidlowy wybor. Powrot do menu glownego\n");
+        scanf_s("%d", &choice);
+
+        if (choice < 1 || choice > 7) {
+            printf("Nie prawidlowy wybor. Powrot do menu Glownego\n");
         }
         while (getchar() != '\n');
        
@@ -231,11 +219,11 @@ void show_history_menu() {
                 return;
 
             default:
-                printf("Wrong choice\n");
+                printf("Nie prawidwowy wybor.\n");
                 break;
             }
 
-            printf("\nNaciśnij Enter, aby kontynuować...");
+            printf("\nNacisnij Enter, aby kontynuowac...");
             getchar();
 
       
@@ -248,19 +236,15 @@ void show_delete_menu() {
         return;
     }
     /*system("cls");*/
-    int enityToRemove;
+    int numberToRemove;
     printf("Wprowadz numer linii do usuniecia.(0-%d): ", data_counter);
-    scanf_s("%d", &enityToRemove);
+    scanf_s("%d", &numberToRemove);
 
-    if (enityToRemove < 0 || enityToRemove > data_counter) {
+    if (numberToRemove < 0 || numberToRemove > data_counter) {
         printf("Nie prawidwowy wybor.\n");
         return;
     }
-    StoreData removed = remove_data_from_history(enityToRemove);
-
-    printf("Usunienta linia: ");
-    printf("<%d> %.2f%c = %.2f%c\n", removed.historyIndex, removed.temperatureInput,
-        removed.unitInput, removed.temperatureOutput, removed.unitOutput);
+    remove_data_from_history(numberToRemove);
     
     show_history_menu();
 }
@@ -268,7 +252,7 @@ void show_delete_menu() {
 void show_update_menu()
 {
     if (data_counter == 0) {
-        printf("Historia jest pusta. Nie ma nic do update.\n");
+        printf("Historia jest pusta. Nie ma nic do aktualizacji.\n");
         return;
     }
     /*system("cls");*/
@@ -282,7 +266,7 @@ void show_update_menu()
         return;
     }
 
-    printf("Wybierz opcję for linii:\n");
+    printf("Wybierz opcje for linii:\n");
     printf("1 - przelicz Fahr -> Celsius\n");
     printf("2 - przelicz Fahr -> Kelwin\n");
     printf("3 - przelicz Celsius -> Fahr\n");
@@ -299,7 +283,7 @@ void show_update_menu()
     {
 	    case 1:
 	    {
-	        printf("Podaj temperaturę w Fahrenheitach: ");
+	        printf("Podaj temperature w Fahrenheitach: ");
 	        scanf_s("%f", &temperatureInput);
 
 	        float temperatureOutput = FtoC(temperatureInput);
@@ -310,7 +294,7 @@ void show_update_menu()
 
 	    case 2:
 	    {
-	        printf("Podaj temperaturę w Fahrenheitach: ");
+	        printf("Podaj temperature w Fahrenheitach: ");
 	        scanf_s("%f", &temperatureInput);
 
 	        float temperatureOutput = FtoK(temperatureInput);
@@ -320,7 +304,7 @@ void show_update_menu()
 	    }
 	    case 3:
 	    {
-	        printf("Podaj temperaturę w Celsiuszach: ");
+	        printf("Podaj temperature w Celsiuszach: ");
 	        scanf_s("%f", &temperatureInput);
 
 	        float temperatureOutput = CtoF(temperatureInput);
@@ -330,7 +314,7 @@ void show_update_menu()
 	    }
 	    case 4:
 	    {
-	        printf("Podaj temperaturę w Celsiuszach: ");
+	        printf("Podaj temperature w Celsiuszach: ");
 	        scanf_s("%f", &temperatureInput);
 
 	        float temperatureOutput = CtoK(temperatureInput);
@@ -340,7 +324,7 @@ void show_update_menu()
 	    }
 	    case 5:
 	    {
-	        printf("Podaj temperaturę w Kelvinach: ");
+	        printf("Podaj temperature w Kelvinach: ");
 	        scanf_s("%f", &temperatureInput);
 
 	        float temperatureOutput = KtoC(temperatureInput);
@@ -351,7 +335,7 @@ void show_update_menu()
 	    }
 	    case 6:
 	    {
-	        printf("Podaj temperaturę w Kelvinach: ");
+	        printf("Podaj temperature w Kelvinach: ");
 	        scanf_s("%f", &temperatureInput);
 
 	        float temperatureOutput = KtoF(temperatureInput);
@@ -373,28 +357,27 @@ void show_main_menu()
 	while (true) {
 	/*	system("cls");*/ // Clear console
 
-		printf("Wybierz opcję:\n");
+		printf("Wybierz opcje:\n");
 		printf("1 - przelicz Fahr -> Celsius\n");
 		printf("2 - przelicz Fahr -> Kelwin\n");
 		printf("3 - przelicz Celsius -> Fahr\n");
 		printf("4 - przelicz Celsius -> Kelwin\n");
 		printf("5 - przelicz Kelwin -> Celsius\n");
 		printf("6 - przelicz Kelwin -> Fahr\n");
-		printf("7 - Add random data to history\n");
+		printf("7 - Dodaj losowe dane do historii\n");
         printf("8 - Pokaz historie przeliczen\n");
 
-		printf("Wybór: ");
+		printf("Wybor: ");
+        scanf_s("%d", &choice);
 
-        if (scanf_s("%d", &choice) != 1 || choice < 1 || choice > 8) {
-            printf("Nie prawidlowy wybor. Powrot do menu glownego\n");
-        }
+        
         while (getchar() != '\n') {}
 
 	switch (choice)
 		{
 		case 1:
 			{
-				printf("Podaj temperaturę w Fahrenheitach: ");
+				printf("Podaj temperature w Fahrenheitach: ");
 				scanf_s("%f", &temperatureInput);
 
 				float temperatureOutput = FtoC(temperatureInput);
@@ -405,7 +388,7 @@ void show_main_menu()
 
 		case 2:
 			{
-				printf("Podaj temperaturę w Fahrenheitach: ");
+				printf("Podaj temperature w Fahrenheitach: ");
 				scanf_s("%f", &temperatureInput);
 
 				float temperatureOutput = FtoK(temperatureInput);
@@ -415,7 +398,7 @@ void show_main_menu()
 			}
 		case 3:
 			{
-				printf("Podaj temperaturę w Celsiuszach: ");
+				printf("Podaj temperature w Celsiuszach: ");
 				scanf_s("%f", &temperatureInput);
 
 				float temperatureOutput = CtoF(temperatureInput);
@@ -425,7 +408,7 @@ void show_main_menu()
 			}
 		case 4:
 			{
-				printf("Podaj temperaturę w Celsiuszach: ");
+				printf("Podaj temperature w Celsiuszach: ");
 				scanf_s("%f", &temperatureInput);
 
 				float temperatureOutput = CtoK(temperatureInput);
@@ -435,7 +418,7 @@ void show_main_menu()
 			}
 		case 5:
 			{
-				printf("Podaj temperaturę w Kelvinach: ");
+				printf("Podaj temperature w Kelvinach: ");
 				scanf_s("%f", &temperatureInput);
 
 				float temperatureOutput = KtoC(temperatureInput);
@@ -446,7 +429,7 @@ void show_main_menu()
 			}
 		case 6:
 			{
-				printf("Podaj temperaturę w Kelvinach: ");
+				printf("Podaj temperature w Kelvinach: ");
 				scanf_s("%f", &temperatureInput);
 
 				float temperatureOutput = KtoF(temperatureInput);
@@ -458,7 +441,7 @@ void show_main_menu()
 			{
                 if(data_counter == MAX_HISTORY)
                 {
-                    printf("History is full");
+                    printf("Historia jest pelna");
                     break;
                 }
 				add_random_data_to_history();
@@ -466,18 +449,18 @@ void show_main_menu()
 			}
 		case 8:
 			if (data_counter == 0) {
-				printf("Brak zapisanej historii przeliczeń");
+				printf("Brak zapisanej historii przeliczen");
 				break;
 			}
 			show_history_menu();
 			break;
 
 		default:
-			printf("Nieprawidłowy wybór.\n");
+			printf("Nieprawidlowy wybor.\n");
 			break;
 		}
 
-		printf("\nNaciśnij Enter, aby kontynuować...");
+		printf("\nNacisnij Enter, aby kontynuowac...");
 		getchar();
 		getchar();
 
